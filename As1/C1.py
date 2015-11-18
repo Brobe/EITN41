@@ -58,14 +58,11 @@ class Alice(object):
 		proof_indexes_r = self.bank.withdraw1(bs)
 		proofs = [quads[i] for i in proof_indexes_r]
 		blind_sign = self.bank.withdraw2(proofs, self.ID)
-		print "blind sign:", blind_sign
 		for [a,c,d,r] in proofs:
-			print "[a,c,d,r]", [a,c,d,r]
-			blind_sign //= (r % n)
-			print "blind sign:", blind_sign
-			blind_sign %= n
-			print "blind sign:", blind_sign
-		print "this is the blind sign:", blind_sign
+			r_inv = modinv(r, n)
+			blind_sign = blind_sign * r_inv % n
+		sign = blind_sign
+		print "this is the sign:", sign
 
 def egcd(a, b):
 	if a == 0:

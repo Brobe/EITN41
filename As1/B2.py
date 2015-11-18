@@ -11,7 +11,7 @@ possible_start_vals = 100
 start_val = int(random.random() * possible_start_vals)
 
 def coin_hash(x):
-	# we do this in order to use the hash_mask, but we want a reliable 
+	# we do this in order to use the hash_mask, but we want a reliable
 	# hash func, we don't trust hash
 	dig = hashlib.sha224(str(x)).hexdigest()
 	return hash(dig) & hash_mask
@@ -19,14 +19,20 @@ def coin_hash(x):
 def main():
 	bins = defaultdict(list)
 	coins = []
+	#we use a random starting value
+	start_val = int(random.random() * possible_start_vals)
 	print "start val was: ", start_val
 	for x in xrange(start_val, start_val + k * n_bins):
+		#create the hash
 		h_val = coin_hash(x)
+		#add the hash to the proper bin
 		bins[h_val].append(x)
-		if len(bins[h_val]) == k:
-			coins.append(bins[h_val])
-			bins[h_val] = []
 
+		if len(bins[h_val]) == k:
+			#if we're here, we have a coin, woo!!
+			coins.append(bins[h_val])
+			#let's empty the bin
+			bins[h_val] = []
 	print_coins(coins)
 
 def print_coins(coins):

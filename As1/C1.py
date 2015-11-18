@@ -3,9 +3,9 @@
 import random
 import hashlib
 
-k = 20
-p = 492876863
-q = 512927377
+k = 5 
+p = 29
+q = 23
 n = p * q # if this is prime, gcd(n, r1) will be 1
 e = 5
 
@@ -35,15 +35,13 @@ class Bank(object):
 
 	def withdraw2(self, proof, ID):
 		x_ys = get_x_ys(proof, ID)
-		bs = get_bs(proof, x_ys)
-		for i, b in zip(self.proof_indices, bs):
+		validation_bs = get_bs(proof, x_ys)
+		for i, b in zip(self.proof_indices, validation_bs):
 			if self.bs[i] != b:
 				print "fail!"
 				return False
-		inv = modinv(e, (p - 1) * (q - 1))
-		self.d = inv
-		print "INV", inv
-		sig_factors = [pow(self.bs[i], inv, n) for i in xrange(2 * k) if i not in self.proof_indices]
+		self.d = modinv(e, (p - 1) * (q - 1))
+		sig_factors = [pow(self.bs[i], self.d, n) for i in xrange(2 * k) if i not in self.proof_indices]
 		sign = 1
 		for factor in sig_factors:
 			sign *= factor
@@ -105,21 +103,10 @@ def get_bs(quads, x_ys):
 	bs = [(pow(r, e) * f(x, y)) % n for [a,c,d,r], [x,y] in zip(quads, x_ys)]
 	return bs
 
-def test(B, bank, ID, indices, S):
-#just making sure the algo is correct
-        real_S = 1
-        for i, (ai, ci, di, ri) in enumerate(B):
-            if i not in indices:
-                real_S = (real_S * pow(f(h(ai, ci), h(ai ^ ID, di)), bank.d, n)) % n
-
-        return S, real_S
-
 def main():
 	bank = Bank()
 	alice = Alice(bank)
 	sign = alice.withdrawal()
-	print test(alice.quads, bank, alice.ID, bank.proof_indices, sign)
-	print pow(2, e*bank.d, n)
 
 if __name__ == '__main__':
 	main()

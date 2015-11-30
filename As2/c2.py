@@ -1,29 +1,25 @@
 #!/usr/bin/python
 
+from mpl_toolkits.mplot3d import Axes3D
+from matplotlib import cm
+from matplotlib.ticker import LinearLocator, FormatStrFormatter
+import matplotlib.pyplot as plt
 import random
 import sys
 import numpy as np
 
-n = 4
-# m less or eq N/n. => insecure
-
-#we let alice be labeled 0
-
+n = 3
 class Mix():
 	def __init__(self, N, b, m):
-		if b < n:
-			print "failed as b < n"
-			sys.exit(1)
-		if m > float(N) / n:
-			print "failed as m > N/n"
-			sys.exit(1)
+		assert b >= n, "b: %r is less than n: %r" % (b, n)
+		assert m <= float(N) / n,\
+			"m: %r is larger than N/n: %r" % (m, float(N) / n)
 		self.alice = 0
 		self.users_except_alice = range(1, N)
+		self.all_users = range(0, N)
 		self.alice_partners = self.users_except_alice[:m]
-		self.non_alice_partners = self.users_except_alice[m:]
-		self.N = N
+		self.non_alice_partners = self.users_except_alice[m:] + [self.alice]
 		self.b = b
-		self.m = m
 
 	def alice_batch(self):
 		random.shuffle(self.users_except_alice)
@@ -40,12 +36,13 @@ def learn_rec_set(disjoints, new_receivers):
 		disjoints.append(new_receivers)
 
 def exclude_rec_set(disjoints, new_receivers):
-	non_disjunct = [(i, rj) for i, rj in enumerate(disjoints) if not rj.isdisjoint(new_receivers)]
+	non_disjunct = [(i, rj) for i, rj in 
+		enumerate(disjoints) if not rj.isdisjoint(new_receivers)]
 	if len(non_disjunct) == 1:
 		i = non_disjunct[0][0]
 		disjoints[i] = non_disjunct[0][1] & new_receivers
 
-def is_singled_out(disjoints):
+def attack_has_succeeded(disjoints):
 	for r in disjoints:
 		if len(r) > 1:
 			return False
@@ -53,68 +50,62 @@ def is_singled_out(disjoints):
 		return True
 
 def simulate_attack(N, b, m):
+	'''
+	Returns the number of batches read before
+	the attack succeeded.
+	'''
 	mix = Mix(N, b, m)
-	#learning phase!
 	disjoint = list()
 	n_learn_batches = 0
 	n_exc_batches = 0
 	#learning phase
-	while(len(disjoint) < m):
+	while len(disjoint) < m:
 		n_learn_batches += 1
 		senders, receivers = mix.alice_batch()
-		learn_rec_set(disjoint, receivers)
-	#excluding phase
-	while(not is_singled_out(disjoint)):
+		print disjoint, receivers
+                learn_rec_set(disjoint, receivers)
+
+	print "learning done"
+        #excluding phase
+	while not attack_has_succeeded(disjoint):
 		n_exc_batches += 1
 		senders, receivers = mix.alice_batch()
+		print disjoint, receivers
 		exclude_rec_set(disjoint, receivers)
 	disjoint.sort()
 	return n_learn_batches + n_exc_batches
-	#print "WE FOUND THESE PARTNERS:", " ".join([str(list(s)[0]) for s in disjoint])
-	#print "n_learn_bathces", n_learn_batches
-	#print "n_exc_bathces", n_exc_batches
 
+def main():
+	b = n # senders in each batch
+	NMIN, NMAX = 1, 20
+	mMIN = 3
+	simuls = 10
+	Ns = []
+	ms = []
+	n_batches = []
 
+	for N_i in xrange(NMIN, NMAX + 1):
+		for m_i in xrange(mMIN, N_i / n + 1):
+			print "N", N_i, "m", m_i
+			Ns.append(N_i)
+			ms.append(m_i)
+			average_comp = np.mean([simulate_attack(N_i, b, m_i) for _ in xrange(simuls)])
+			n_batches.append(average_comp)
+	for l in [("n", N_i, "m", m_i, "c", c_i) for N_i, m_i, c_i in zip(Ns, ms, n_batches)]:
+		print l
+	plot(Ns, ms, n_batches)
 
-def plot(Ns, ms, complexities):
-	from mpl_toolkits.mplot3d import Axes3D
-	from matplotlib import cm
-	from matplotlib.ticker import LinearLocator, FormatStrFormatter
-	import matplotlib.pyplot as plt
-
-
+def plot(Ns, ms, n_batches):
 	fig = plt.figure()
 	ax = fig.add_subplot(111, projection='3d')
 	X = np.array(Ns)
-	Y = np.array(complexities)
+	Y = np.array(n_batches)
 	Z = np.array(ms)
 	ax.bar(X, Y, zs=Z, zdir='y')
 	ax.set_xlabel('N')
 	ax.set_ylabel('m')
-	ax.set_zlabel('complexity')
+	ax.set_zlabel('n_batches')
 	plt.show()
-
-def main():
-	# N = total user base
-	# m = communication partners
-	b = n # senders in each batch
-	NMIN, NMAX = 10, 50
-	simuls = 10
-	Ns = []
-	ms = []
-	complexities = []
-
-	for N_i in xrange(NMIN, NMAX + 1):
-		for m_i in xrange(1, N_i/n):
-			Ns.append(N_i)
-			ms.append(m_i)
-			average_comp = np.mean([simulate_attack(N_i, b, m_i) for _ in xrange(simuls)])
-			complexities.append(average_comp)
-	for l in [("n", N_i, "m", m_i, "c", c_i) for N_i, m_i, c_i in zip(Ns, ms, complexities)]:
-		print l
-	plot(Ns, ms, complexities)
-
-
 
 if __name__ == '__main__':
 	main()

@@ -5,24 +5,24 @@
 	xmlns:soapenc='http://schemas.xmlsoap.org/soap/encoding/'
 	xmlns:wsdl='http://schemas.xmlsoap.org/wsdl/'
 	xmlns='http://schemas.xmlsoap.org/wsdl/'>
-	<message name='getRandomRequest'>
-		<part name='min'/>
-		<part name='max'/>
+	<message name='predictFuture'>
+		<part name='age'/>
+		<part name='name'/>
 	</message>
-	<message name='getRandomResponse'>
+	<message name='predictFutureResponse'>
 		<part name='Result'/>
 	</message>
-	<portType name='RNGPortType'>
-		<operation name='getRandom'>
-			<input message='tns:getRandomRequest'/>
-			<output message='tns:getRandomResponse'/>
+	<portType name='PFPortType'>
+		<operation name='predictFuture'>
+			<input message='tns:predictFutureRequest'/>
+			<output message='tns:predictFutureResponse'/>
 		</operation>
 	</portType>
-	<binding name='RNGBinding' type='tns:RNGPortType'>
+	<binding name='PFBinding' type='tns:PFPortType'>
 		<soap:binding style='rpc'
 			transport='http://schemas.xmlsoap.org/soap/http'/>
-		<operation name='getRandom'>
-			<soap:operation soapAction='urn:rng#getRandom'/>
+		<operation name='predictFuture'>
+			<soap:operation soapAction='urn:predictFuture'/>
 			<input>
 				<soap:body use='literal' />
 			</input>
@@ -31,9 +31,9 @@
 			</output>
 		</operation>
 	</binding>
-	<service name='RNGService'>
-		<port name='RNGPort' binding='RNGBinding'>
-			<soap:address location='http://localhost/A5/C1/server2.php'/>
+	<service name='PFService'>
+		<port name='PFPort' binding='PFBinding'>
+			<soap:address location='http://localhost/A5/C1/service.php'/>
 		</port>
 	</service>
 </definitions>

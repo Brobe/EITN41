@@ -6,11 +6,11 @@
 	xmlns:wsdl='http://schemas.xmlsoap.org/wsdl/'
 	xmlns='http://schemas.xmlsoap.org/wsdl/'>
 	<message name='predictFutureRequest'>
-		<part name='age'/>
-		<part name='name'/>
+		<part name='age' element="xsd:int"/>
+		<part name='name' element="xsd:string"/>
 	</message>
 	<message name='predictFutureResponse'>
-		<part name='Result'/>
+		<part name='Result' element="xsd:string"/>
 	</message>
 	<portType name='PFPortType'>
 		<operation name='predictFuture'>
@@ -22,7 +22,7 @@
 		<soap:binding style='rpc'
 			transport='http://schemas.xmlsoap.org/soap/http'/>
 		<operation name='predictFuture'>
-			<soap:operation soapAction='urn:rng#predictFuture'/>
+			<soap:operation soapAction='urn:predictFuture'/>
 			<input>
 				<soap:body use='literal' />
 			</input>
@@ -33,7 +33,7 @@
 	</binding>
 	<service name='PFService'>
 		<port name='PFPort' binding='PFBinding'>
-			<soap:address location='http://localhost/A5/C1/service.php'/>
+			<soap:address location='http://127.0.0.1/A5/C1/service.php'/>
 		</port>
 	</service>
 </definitions>

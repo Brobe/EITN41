@@ -5,7 +5,7 @@
 	xmlns:soapenc='http://schemas.xmlsoap.org/soap/encoding/'
 	xmlns:wsdl='http://schemas.xmlsoap.org/wsdl/'
 	xmlns='http://schemas.xmlsoap.org/wsdl/'>
-	<message name='predictFuture'>
+	<message name='predictFutureRequest'>
 		<part name='age'/>
 		<part name='name'/>
 	</message>
@@ -22,7 +22,7 @@
 		<soap:binding style='rpc'
 			transport='http://schemas.xmlsoap.org/soap/http'/>
 		<operation name='predictFuture'>
-			<soap:operation soapAction='urn:predictFuture'/>
+			<soap:operation soapAction='urn:rng#predictFuture'/>
 			<input>
 				<soap:body use='literal' />
 			</input>
